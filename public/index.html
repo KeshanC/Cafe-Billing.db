@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cozy Cup - Premium Cafe Billing System</title>
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Floating Background Decorative Orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="app-container">
+
+    <!-- ==================== 1. LOGIN SCREEN ==================== -->
+    <div id="login-screen" class="screen active">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="logo-circle">
+            <i data-lucide="coffee"></i>
+          </div>
+          <h1>Cozy Cup</h1>
+          <p>Cafe Management Portal</p>
+        </div>
+        
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <div class="input-wrapper">
+              <i data-lucide="user"></i>
+              <input type="text" id="username" placeholder="e.g., admin or staff" required autocomplete="username">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock"></i>
+              <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+          </div>
+
+          <div id="login-error" class="error-msg hidden">
+            <i data-lucide="alert-circle"></i>
+            <span id="error-text">Invalid credentials. Please try again.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <span>Log In</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </form>
+
+        <div class="login-tips">
+          <p><strong>Initial Access:</strong></p>
+          <p>Admin: <code>admin</code> / <code>admin123</code></p>
+          <p class="text-muted" style="margin-top: 4px; font-size: 0.7rem;">Staff accounts must be created by the Admin.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 2. MAIN DASHBOARD SHELL ==================== -->
+    <div id="dashboard-screen" class="screen">
+      
+      <!-- Top Header Navigation -->
+      <header class="app-header">
+        <div class="header-brand">
+          <div class="header-logo">
+            <i data-lucide="coffee"></i>
+          </div>
+          <div class="brand-text">
+            <h2>Cozy Cup Cafe</h2>
+            <span id="header-datetime">Friday, 15:35 PM</span>
+          </div>
+        </div>
+
+        <nav class="header-nav">
+          <button class="nav-tab active" data-tab="pos">
+            <i data-lucide="shopping-cart"></i>
+            <span>Billing POS</span>
+          </button>
+          <button class="nav-tab admin-only" data-tab="inventory" id="tab-inventory">
+            <i data-lucide="package"></i>
+            <span>Manage Items</span>
+          </button>
+          <button class="nav-tab admin-only" data-tab="reports" id="tab-reports">
+            <i data-lucide="bar-chart-2"></i>
+            <span>Daily Reports</span>
+          </button>
+          <button class="nav-tab admin-only" data-tab="users" id="tab-users">
+            <i data-lucide="users"></i>
+            <span>Manage Users</span>
+          </button>
+        </nav>
+
+        <div class="header-profile">
+          <div class="profile-info">
+            <span class="profile-name" id="user-display-name">Admin User</span>
+            <span class="profile-role" id="user-display-role">Admin</span>
+          </div>
+          <button id="logout-btn" class="btn btn-icon-only btn-danger-soft" title="Logout">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Dashboard Grid -->
+      <main class="dashboard-body">
+
+        <!-- ==================== TAB A: POS BILLING SYSTEM ==================== -->
+        <section id="tab-content-pos" class="tab-pane active">
+          <div class="pos-layout">
+            
+            <!-- Left Side: Catalog & Menu Grid -->
+            <div class="pos-catalog">
+              <div class="catalog-filters">
+                <button class="filter-btn active" data-category="all">All Items</button>
+                <button class="filter-btn" data-category="Coffee">Coffee</button>
+                <button class="filter-btn" data-category="Beverages">Beverages</button>
+                <button class="filter-btn" data-category="Bakery">Bakery</button>
+              </div>
+
+              <div class="search-bar-wrapper">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="pos-search" placeholder="Search item by name...">
+              </div>
+
+              <div id="pos-menu-grid" class="menu-grid">
+                <!-- Dynamically loaded menu cards -->
+              </div>
+            </div>
+
+            <!-- Right Side: Order Cart & Billing -->
+            <div class="pos-cart-panel">
+              <div class="cart-header">
+                <h3>Current Order</h3>
+                <button id="clear-cart-btn" class="btn btn-text btn-danger-soft">
+                  <i data-lucide="trash-2"></i> Clear Cart
+                </button>
+              </div>
+
+              <!-- Cart List -->
+              <div class="cart-items-container" id="cart-items-list">
+                <!-- Dynamically loaded cart item rows -->
+                <div class="empty-cart-state">
+                  <i data-lucide="shopping-bag"></i>
+                  <p>Cart is empty. Select items from the menu.</p>
+                </div>
+              </div>
+
+              <!-- Cart Summary Calc -->
+              <div class="cart-totals">
+                <div class="summary-row">
+                  <span>Subtotal</span>
+                  <span id="cart-subtotal">₹0.00</span>
+                </div>
+                <div class="summary-row align-center">
+                  <span>Discount (₹)</span>
+                  <input type="number" id="cart-discount-input" min="0" value="0" step="0.5" class="discount-input">
+                </div>
+                <div class="summary-row">
+                  <span>Tax (5%)</span>
+                  <span id="cart-tax">₹0.00</span>
+                </div>
+                <hr class="summary-divider">
+                <div class="summary-row grand-total">
+                  <span>Total Payable</span>
+                  <span id="cart-total">₹0.00</span>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="payment-method-selector">
+                  <label class="section-label">Payment Method</label>
+                  <div class="payment-grid">
+                    <label class="payment-option">
+                      <input type="radio" name="payment-method" value="Cash" checked>
+                      <div class="payment-card">
+                        <i data-lucide="banknote"></i>
+                        <span>Cash</span>
+                      </div>
+                    </label>
+                    <label class="payment-option">
+                      <input type="radio" name="payment-method" value="Card">
+                      <div class="payment-card">
+                        <i data-lucide="credit-card"></i>
+                        <span>Card</span>
+                      </div>
+                    </label>
+                    <label class="payment-option">
+                      <input type="radio" name="payment-method" value="UPI">
+                      <div class="payment-card">
+                        <i data-lucide="smartphone"></i>
+                        <span>UPI</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <button id="checkout-btn" class="btn btn-success btn-block btn-lg" disabled>
+                  <i data-lucide="check-circle"></i>
+                  <span>Checkout & Print Bill</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================== TAB B: INVENTORY MANAGEMENT ==================== -->
+        <section id="tab-content-inventory" class="tab-pane">
+          <div class="inventory-layout">
+            
+            <!-- Left Column: Add / Update Form -->
+            <div class="inventory-form-card">
+              <h3 id="inventory-form-title">Add New Menu Item</h3>
+              <form id="menu-item-form">
+                <input type="hidden" id="item-edit-id">
+                
+                <div class="form-group">
+                  <label for="item-name">Item Name</label>
+                  <input type="text" id="item-name" placeholder="e.g., Hot Latte" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="item-price">Price (₹)</label>
+                  <input type="number" id="item-price" min="0" step="0.01" placeholder="e.g., 3.50" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="item-category">Category</label>
+                  <select id="item-category" required>
+                    <option value="" disabled selected>Select Category</option>
+                    <option value="Coffee">Coffee</option>
+                    <option value="Beverages">Beverages</option>
+                    <option value="Bakery">Bakery</option>
+                  </select>
+                </div>
+
+                <div class="form-group row-inline" id="item-availability-wrapper">
+                  <label for="item-available">Available</label>
+                  <input type="checkbox" id="item-available" checked>
+                </div>
+
+                <div class="form-buttons">
+                  <button type="submit" id="save-item-btn" class="btn btn-primary">
+                    <i data-lucide="plus"></i> Add Item
+                  </button>
+                  <button type="button" id="cancel-edit-btn" class="btn btn-secondary hidden">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right Column: Menu List Table -->
+            <div class="inventory-list-card">
+              <div class="card-header-flex">
+                <h3>Active Menu Items</h3>
+                <span class="badge" id="menu-items-count">0 Items</span>
+              </div>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Availability</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventory-table-body">
+                    <!-- Loaded dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================== TAB C: DAILY REPORTS & ANALYTICS ==================== -->
+        <section id="tab-content-reports" class="tab-pane">
+          <div class="reports-layout">
+            
+            <!-- Dashboard Stats Summary Cards -->
+            <div class="reports-summary-cards">
+              <div class="stats-card card-total-sales">
+                <div class="stats-icon">
+                  <i data-lucide="indian-rupee"></i>
+                </div>
+                <div class="stats-data">
+                  <span class="stats-label">Net Sales</span>
+                  <h3 id="stat-net-sales">₹0.00</h3>
+                </div>
+              </div>
+              
+              <div class="stats-card card-total-orders">
+                <div class="stats-icon">
+                  <i data-lucide="receipt"></i>
+                </div>
+                <div class="stats-data">
+                  <span class="stats-label">Total Orders</span>
+                  <h3 id="stat-total-orders">0</h3>
+                </div>
+              </div>
+
+              <div class="stats-card card-avg-ticket">
+                <div class="stats-icon">
+                  <i data-lucide="trending-up"></i>
+                </div>
+                <div class="stats-data">
+                  <span class="stats-label">Average Order</span>
+                  <h3 id="stat-avg-ticket">₹0.00</h3>
+                </div>
+              </div>
+
+              <div class="stats-card card-total-discount">
+                <div class="stats-icon">
+                  <i data-lucide="percent"></i>
+                </div>
+                <div class="stats-data">
+                  <span class="stats-label">Total Discounts</span>
+                  <h3 id="stat-total-discounts">₹0.00</h3>
+                </div>
+              </div>
+            </div>
+
+            <!-- Two Column Layout: Left Days List, Right Details -->
+            <div class="reports-detail-grid">
+              
+              <!-- Left: Sales grouped by Date -->
+              <div class="reports-days-card">
+                <h3>Everyday Sales Ledger</h3>
+                <div class="ledger-list" id="report-dates-list">
+                  <!-- Dynamically loaded list of daily records -->
+                </div>
+              </div>
+
+              <!-- Right: Detailed Orders List for Selected Date -->
+              <div class="reports-invoices-card">
+                <div class="card-header-flex">
+                  <div>
+                    <h3 id="reports-date-title">Orders Report</h3>
+                    <span class="subtitle" id="reports-date-subtitle">Select a day on the left to view invoices</span>
+                  </div>
+                  <button id="export-ledger-btn" class="btn btn-secondary btn-sm" disabled>
+                    <i data-lucide="download"></i> Export Data
+                  </button>
+                </div>
+
+                <div class="table-container list-details-table">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Order ID</th>
+                        <th>Cashier</th>
+                        <th>Items Summary</th>
+                        <th>Payment</th>
+                        <th>Net Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="report-orders-tbody">
+                      <tr>
+                        <td colspan="6" class="text-center text-muted">Select a date from the Everyday Ledger to see order details.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================== TAB D: USER MANAGEMENT ==================== -->
+        <section id="tab-content-users" class="tab-pane">
+          <div class="inventory-layout">
+            
+            <!-- Left Column: Add User Form -->
+            <div class="inventory-form-card">
+              <h3>Create New User</h3>
+              <form id="create-user-form">
+                <div class="form-group">
+                  <label for="new-user-fullname">Full Name</label>
+                  <input type="text" id="new-user-fullname" placeholder="e.g., Jane Doe" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="new-username">Username</label>
+                  <input type="text" id="new-username" placeholder="e.g., janedoe" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                  <label for="new-password">Password</label>
+                  <input type="password" id="new-password" placeholder="••••••••" required autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                  <label for="new-user-role">Role</label>
+                  <select id="new-user-role" required>
+                    <option value="" disabled selected>Select Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="staff">Staff</option>
+                  </select>
+                </div>
+
+                <div class="form-buttons">
+                  <button type="submit" class="btn btn-primary btn-block">
+                    <i data-lucide="user-plus"></i> Add User
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right Column: User List Table -->
+            <div class="inventory-list-card">
+              <div class="card-header-flex">
+                <h3>Registered Users</h3>
+                <span class="badge" id="registered-users-count">0 Users</span>
+              </div>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Full Name</th>
+                      <th>Username</th>
+                      <th>Role</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="users-table-body">
+                    <!-- Loaded dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+  </div>
+
+  <!-- ==================== 4. CHANGE PASSWORD MODAL ==================== -->
+  <div id="password-modal" class="modal-overlay">
+    <div class="login-card" style="max-width: 380px;">
+      <div class="login-header" style="margin-bottom: 20px;">
+        <div class="logo-circle" style="background-color: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.25);">
+          <i data-lucide="key" style="color: var(--info-color);"></i>
+        </div>
+        <h3>Change Password</h3>
+        <p id="password-modal-subtitle">Update password for user</p>
+      </div>
+
+      <form id="change-password-form">
+        <input type="hidden" id="password-modal-user-id">
+        <div class="form-group">
+          <label for="new-modal-password">New Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock"></i>
+            <input type="password" id="new-modal-password" placeholder="••••••••" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="form-buttons">
+          <button type="button" id="close-password-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== 3. RECEIPT PRINTER MODAL ==================== -->
+  <div id="receipt-modal" class="modal-overlay">
+    <div class="receipt-container">
+      
+      <!-- Actions Header -->
+      <div class="receipt-modal-actions no-print">
+        <button id="close-receipt-btn" class="btn btn-secondary">
+          <i data-lucide="x"></i> Close
+        </button>
+        <button id="print-receipt-btn" class="btn btn-primary">
+          <i data-lucide="printer"></i> Print Receipt
+        </button>
+      </div>
+
+      <!-- Thermal Paper Receipt Design -->
+      <div class="receipt-paper" id="receipt-paper-content">
+        <div class="receipt-header">
+          <h2>COZY CUP CAFE</h2>
+          <p class="receipt-tagline">Fresh Coffee & Good Vibes</p>
+          <p>123 Coffee Lane, Metro City</p>
+          <p>Tel: (555) 123-4567</p>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-metadata">
+          <div class="meta-row">
+            <span>Date:</span>
+            <span id="receipt-date">2026-06-19 15:35:00</span>
+          </div>
+          <div class="meta-row">
+            <span>Receipt #:</span>
+            <span id="receipt-id">10024</span>
+          </div>
+          <div class="meta-row">
+            <span>Cashier:</span>
+            <span id="receipt-cashier">Staff Member</span>
+          </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <!-- Receipt Table -->
+        <table class="receipt-table">
+          <thead>
+            <tr>
+              <th class="text-left">Item</th>
+              <th class="text-center">Qty</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody id="receipt-items-tbody">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+
+        <div class="receipt-divider"></div>
+
+        <!-- Totals block -->
+        <div class="receipt-totals">
+          <div class="r-total-row">
+            <span>Subtotal</span>
+            <span id="receipt-subtotal">₹0.00</span>
+          </div>
+          <div class="r-total-row">
+            <span>Discount</span>
+            <span id="receipt-discount">-₹0.00</span>
+          </div>
+          <div class="r-total-row">
+            <span>Tax (5%)</span>
+            <span id="receipt-tax">₹0.00</span>
+          </div>
+          <div class="r-total-row grand">
+            <span>TOTAL DUE</span>
+            <span id="receipt-total">₹0.00</span>
+          </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-footer">
+          <p>Payment: <span id="receipt-payment">Cash</span></p>
+          <p class="receipt-barcode">||||| | ||||| | || ||</p>
+          <p class="thanks-msg">Thank you for visiting Cozy Cup!</p>
+          <p>Please come again.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
